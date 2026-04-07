@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculator</title>
+    <!-- Modern google fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="index.css">
+    <!-- Ionicons for high quality aesthetic icons -->
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Calculator View -->
+        <div id="calculator-view" class="view active">
+            <div class="calc-display" id="calc-display">0</div>
+            <div class="calc-keys">
+                <button class="key-op" data-action="clear">C</button>
+                <button class="key-op" data-action="delete">⌫</button>
+                <button class="key-op" data-action="operator" value="%">%</button>
+                <button class="key-op" data-action="operator" value="/">÷</button>
+                
+                <button class="key-num" value="7">7</button>
+                <button class="key-num" value="8">8</button>
+                <button class="key-num" value="9">9</button>
+                <button class="key-op" data-action="operator" value="*">×</button>
+                
+                <button class="key-num" value="4">4</button>
+                <button class="key-num" value="5">5</button>
+                <button class="key-num" value="6">6</button>
+                <button class="key-op" data-action="operator" value="-">−</button>
+                
+                <button class="key-num" value="1">1</button>
+                <button class="key-num" value="2">2</button>
+                <button class="key-num" value="3">3</button>
+                <button class="key-op" data-action="operator" value="+">+</button>
+                
+                <button class="key-num zero-btn" value="0">0</button>
+                <button class="key-num" value=".">.</button>
+                <button class="key-equals" data-action="calculate">=</button>
+            </div>
+        </div>
+
+        <!-- Auth View (Login/Register) -->
+        <div id="auth-view" class="view hidden">
+            <div class="auth-container">
+                <div class="auth-header">
+                    <ion-icon name="lock-closed-outline" class="auth-icon"></ion-icon>
+                    <h2 id="auth-title">Secure Login</h2>
+                    <p id="auth-subtitle">Access your encrypted channels</p>
+                </div>
+                <form id="auth-form" class="auth-form">
+                    <div class="input-group">
+                        <ion-icon name="person-outline"></ion-icon>
+                        <input type="text" id="auth-username" placeholder="Username" required autocomplete="off">
+                    </div>
+                    <div class="input-group">
+                        <ion-icon name="key-outline"></ion-icon>
+                        <input type="password" id="auth-password" placeholder="Password" required autocomplete="off">
+                    </div>
+                    <button type="submit" class="auth-btn" id="auth-submit-btn">Login</button>
+                    <div class="auth-switch">
+                        <span id="auth-switch-text">Don't have an account?</span>
+                        <a href="#" id="auth-switch-link">Register</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Recent Chats View -->
+        <div id="recent-chats-view" class="view hidden">
+            <header class="recent-header">
+                <div class="contact-info">
+                    <div class="avatar" style="width: 36px; height: 36px; font-size: 1rem;">
+                        <ion-icon name="person"></ion-icon>
+                    </div>
+                    <div class="details">
+                        <h2>Chats</h2>
+                        <span class="status" id="my-peer-id-display">Connecting...</span>
+                    </div>
+                </div>
+                <div class="actions">
+                    <button id="logout-btn" class="icon-btn" title="Logout" style="color: #ff6b6b;">
+                        <ion-icon name="log-out-outline"></ion-icon>
+                    </button>
+                    <button id="share-id-btn" class="icon-btn" title="Share My ID">
+                        <ion-icon name="copy-outline"></ion-icon>
+                    </button>
+                </div>
+            </header>
+            
+            <main class="recent-list" id="recent-list">
+                <!-- Chat items will be injected here -->
+            </main>
+
+            <button class="fab" id="new-chat-fab" title="New Connection">
+                <ion-icon name="add"></ion-icon>
+            </button>
+        </div>
+
+        <!-- Hidden Chat View -->
+        <div id="chat-view" class="view hidden">
+            <header class="chat-header">
+                <div class="contact-info">
+                    <div class="avatar">
+                        <ion-icon name="person"></ion-icon>
+                    </div>
+                    <div class="details">
+                        <h2>Secure Channel</h2>
+                        <span class="status" id="connection-status">Connecting...</span>
+                    </div>
+                </div>
+                <div class="actions">
+                    <button id="back-to-recent-btn" class="icon-btn" title="Back">
+                        <ion-icon name="arrow-back-outline"></ion-icon>
+                    </button>
+                    <button id="connect-btn" class="icon-btn" title="Connect to Peer" style="display:none;">
+                        <ion-icon name="link-outline"></ion-icon>
+                    </button>
+                    <button id="call-btn" class="icon-btn" title="Call">
+                        <ion-icon name="call-outline"></ion-icon>
+                    </button>
+                    <button id="share-btn" class="icon-btn" title="Share My ID">
+                        <ion-icon name="copy-outline"></ion-icon>
+                    </button>
+                </div>
+            </header>
+            
+            <main class="chat-messages" id="chat-messages">
+                <!-- Messages will be injected here -->
+            </main>
+            
+            <footer class="chat-input-area">
+                <input type="file" id="image-upload-input" accept="image/*" style="display: none;">
+                <button class="icon-btn" id="attach-btn" title="Send Image"><ion-icon name="image-outline"></ion-icon></button>
+                <input type="text" id="message-input" placeholder="Message..." autocomplete="off">
+                <button class="icon-btn send-btn" id="send-btn"><ion-icon name="send"></ion-icon></button>
+            </footer>
+        </div>
+
+        <!-- Audio Calling Elements -->
+        <audio id="remote-audio" autoplay style="display: none;"></audio>
+        
+        <!-- Incoming Call Modal -->
+        <div id="incoming-call-modal" class="call-overlay hidden">
+            <div class="call-modal-content">
+                <div class="ringing-avatar pulse"><ion-icon name="call"></ion-icon></div>
+                <div class="call-info">
+                    <h3>Incoming Call...</h3>
+                    <p id="caller-id-display">Unknown</p>
+                </div>
+                <div class="call-actions">
+                    <button id="reject-call-btn" class="call-btn btn-reject"><ion-icon name="close"></ion-icon></button>
+                    <button id="accept-call-btn" class="call-btn btn-accept"><ion-icon name="call"></ion-icon></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Active Call Banner -->
+        <div id="active-call-banner" class="call-banner hidden">
+            <div class="call-status-indicator pulse-green"></div>
+            <span id="call-timer-display">00:00</span>
+            <button id="end-call-btn" class="call-btn btn-reject btn-small" title="End Call"><ion-icon name="call"></ion-icon></button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

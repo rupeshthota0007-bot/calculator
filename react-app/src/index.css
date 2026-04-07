@@ -9,8 +9,8 @@
     --calc-btn-hover: rgba(255, 255, 255, 0.1);
     --calc-op-bg: rgba(35, 134, 54, 0.15);
     --calc-op-text: #3fb950;
-    --msg-sent: #238636;
-    --msg-received: #21262d;
+    --msg-sent: #005c4b;
+    --msg-received: #202c33;
     --glass-border: rgba(255, 255, 255, 0.08);
 }
 
@@ -146,7 +146,7 @@ body {
 
 /* --- Chat Styles --- */
 #chat-view {
-    background: #0d1117;
+    background: #0b141a;
 }
 
 .chat-header {
@@ -154,7 +154,7 @@ body {
     justify-content: space-between;
     align-items: center;
     padding: 16px 20px;
-    background: rgba(22, 27, 34, 0.85);
+    background: rgba(32, 44, 51, 0.95);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border-bottom: 1px solid var(--glass-border);
@@ -223,6 +223,7 @@ body {
     flex-direction: column;
     gap: 16px;
     /* Subtle background pattern */
+    background-color: #0b141a;
     background-image: radial-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px);
     background-size: 20px 20px;
 }
@@ -238,12 +239,12 @@ body {
 
 .message {
     max-width: 80%;
-    padding: 12px 16px;
-    border-radius: 20px;
+    padding: 8px 12px;
+    border-radius: 12px;
     position: relative;
     word-wrap: break-word;
     animation: fadeIn 0.3s ease;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 @keyframes fadeIn {
@@ -275,43 +276,55 @@ body {
 .message.received {
     align-self: flex-start;
     background: var(--msg-received);
-    border-bottom-left-radius: 4px;
-    border: 1px solid var(--glass-border);
+    border-top-left-radius: 4px;
+    border: none;
 }
 
 .message.sent {
     align-self: flex-end;
     background: var(--msg-sent);
-    border-bottom-right-radius: 4px;
+    border-top-right-radius: 4px;
 }
 
 .chat-input-area {
-    padding: 15px;
-    background: rgba(22, 27, 34, 0.95);
+    padding: 10px;
+    background: transparent;
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    border-top: none;
+}
+
+.input-wrapper {
+    flex: 1;
     display: flex;
     align-items: center;
-    gap: 12px;
-    border-top: 1px solid var(--glass-border);
-    backdrop-filter: blur(20px);
-}
-
-#message-input {
-    flex: 1;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid var(--glass-border);
-    padding: 12px 18px;
+    background: #2a3942;
     border-radius: 24px;
-    color: var(--text-main);
-    font-family: inherit;
-    font-size: 0.95rem;
-    outline: none;
-    transition: all 0.2s;
+    padding: 4px 8px;
+    min-height: 48px;
 }
 
-#message-input:focus {
-    border-color: rgba(63, 185, 80, 0.5);
-    background: rgba(255, 255, 255, 0.08);
-    box-shadow: 0 0 0 3px rgba(35, 134, 54, 0.1);
+.input-wrapper input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    padding: 10px 4px;
+    color: var(--text-main);
+    font-size: 1rem;
+    outline: none;
+}
+
+.input-wrapper .icon-btn {
+    width: 38px;
+    height: 38px;
+    color: #8696a0;
+    margin: 0;
+}
+
+.input-wrapper .icon-btn:hover {
+    background: transparent;
+    color: #aebac1;
 }
 
 #message-input::placeholder {
@@ -319,12 +332,32 @@ body {
 }
 
 .send-btn {
-    color: var(--accent);
+    background: #00a884;
+    color: white;
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    flex-shrink: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    transition: transform 0.2s, background 0.2s;
+}
+
+.send-btn ion-icon {
+    font-size: 1.5rem;
 }
 
 .send-btn:hover {
-    color: var(--text-main);
-    background: var(--accent);
+    background: #008f6f;
+    transform: scale(1.05);
+}
+
+.send-btn:active {
+    transform: scale(0.95);
 }
 /* Incoming Call Overlay Styles */
 .call-overlay {
@@ -391,8 +424,8 @@ body {
     background: #da3633;
 }
 
-/* --- Login Styles --- */
-#login-view {
+/* --- Login & Register Styles --- */
+#login-view, #register-view {
     background: #0d1117;
     display: flex;
     justify-content: center;
@@ -688,4 +721,108 @@ body {
 .context-menu-item.cancel:hover {
     background: rgba(255, 255, 255, 0.06);
     color: var(--text-main);
+}
+
+/* --- Video Call UI --- */
+.video-overlay-active {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #0b141a;
+    z-index: 10;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+.remote-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.local-video-pip {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    width: 100px;
+    height: 150px;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    z-index: 20;
+    background: #000;
+}
+
+.local-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* --- Call Controls UI --- */
+.call-init-pill {
+    display: flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 20px;
+    padding: 2px 4px;
+}
+
+.call-init-pill .icon-btn {
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    margin: 2px;
+}
+
+.call-controls-bar {
+    position: absolute;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 15px;
+    padding: 12px 20px;
+    background: #1e2528;
+    border-radius: 40px;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+    z-index: 100;
+}
+
+.control-btn {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255, 255, 255, 0.08);
+    color: white;
+    font-size: 1.6rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.control-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.control-btn.end-call {
+    background: #f85149;
+}
+
+.control-btn.end-call:hover {
+    background: #da3633;
+    transform: scale(1.05);
+}
+
+.control-btn.muted {
+    background: white;
+    color: #1e2528;
 }

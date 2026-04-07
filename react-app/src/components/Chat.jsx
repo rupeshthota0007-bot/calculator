@@ -11,15 +11,15 @@ const generatePermanentId = (username) => {
     return id;
 };
 
-// Sub-component to render multiple audio streams
-function AudioStreamPlayer({ stream }) {
-    const audioRef = useRef(null);
+// Sub-component to render multiple media streams (audio/video)
+function MediaStreamPlayer({ stream, muted, isRemote }) {
+    const videoRef = useRef(null);
     useEffect(() => {
-        if (audioRef.current && stream) {
-            audioRef.current.srcObject = stream;
+        if (videoRef.current && stream) {
+            videoRef.current.srcObject = stream;
         }
     }, [stream]);
-    return <audio ref={audioRef} autoPlay />;
+    return <video ref={videoRef} autoPlay playsInline muted={muted} className={isRemote ? 'remote-video' : 'local-video'} />;
 }
 
 function Chat({ hidden, currentUser, onLogout }) {
@@ -31,7 +31,8 @@ function Chat({ hidden, currentUser, onLogout }) {
     const [contextMenu, setContextMenu] = useState(null); // { contactId, x, y }
     const longPressTimerRef = useRef(null);
 
-
+    const [isMicMuted, setIsMicMuted] = useState(false);
+    const [isSpeakerDisabled, setIsSpeakerDisabled] = useState(false);
     const [allChats, setAllChats] = useState(() => {
         const saved = localStorage.getItem(`secureChatsData_${currentUser}`);
         if (saved) {
@@ -46,10 +47,13 @@ function Chat({ hidden, currentUser, onLogout }) {
 
     const [inputText, setInputText] = useState('');
 
-    // Audio Call States (Group Calling)
+    // Audio/Video Call States
     const [activeCalls, setActiveCalls] = useState({}); // { [peerId]: callObj }
     const [incomingCalls, setIncomingCalls] = useState([]); // array of call objs ringing
     const [remoteStreams, setRemoteStreams] = useState({}); // { [peerId]: MediaStream }
+    const [localStream, setLocalStream] = useState(null);
+    const [isVideoCall, setIsVideoCall] = useState(false);
+    const [isVideoMuted, setIsVideoMuted] = useState(false);
 
     const localStreamRef = useRef(null);
     const chatMessagesRef = useRef(null);
@@ -167,6 +171,8 @@ function Chat({ hidden, currentUser, onLogout }) {
             setActiveCalls({});
             setIncomingCalls([]);
             setRemoteStreams({});
+            setLocalStream(null);
+            setIsVideoCall(false);
             if (localStreamRef.current) {
                 localStreamRef.current.getTracks().forEach(track => track.stop());
                 localStreamRef.current = null;
@@ -177,7 +183,17 @@ function Chat({ hidden, currentUser, onLogout }) {
     useEffect(() => {
         if (!hidden && !peer && currentUser) {
             const permanentId = generatePermanentId(currentUser);
-            const newPeer = new Peer(permanentId);
+            const newPeer = new Peer(permanentId, {
+                config: {
+                    iceServers: [
+                        { urls: 'stun:stun.l.google.com:19302' },
+                        { urls: 'stun:stun1.l.google.com:19302' },
+                        { urls: 'stun:stun2.l.google.com:19302' },
+                        { urls: 'stun:stun3.l.google.com:19302' },
+                        { urls: 'stun:stun4.l.google.com:19302' },
+                    ]
+                }
+            });
 
             newPeer.on('open', (id) => {
                 setMyPeerId(id);
@@ -246,38 +262,61 @@ function Chat({ hidden, currentUser, onLogout }) {
             return updated;
         });
 
-        // If we don't have any more active calls, stop the mic
+        // If we don't have any more active calls, stop the hardware tracks
         setActiveCalls(latestCalls => {
             if (Object.keys(latestCalls).length === 0 && localStreamRef.current) {
                 localStreamRef.current.getTracks().forEach(track => track.stop());
                 localStreamRef.current = null;
+                setLocalStream(null);
+                setIsVideoCall(false);
             }
             return latestCalls; // unaffected state
         });
 
-        addMessage(`System: Audio call ended with ${targetId}.`, 'received', true);
+        addMessage(`System: Call ended with ${targetId}.`, 'received', true);
     };
 
-    const getMicStream = () => {
-        if (localStreamRef.current) {
-            return Promise.resolve(localStreamRef.current);
-        }
+    const getMediaStream = (videoMode = false) => {
         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-            return Promise.reject(new Error("Microphone access is not supported on this device/browser. Please ensure you are using HTTPS."));
+            return Promise.reject(new Error("Media access is not supported on this device/browser."));
         }
-        return navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+        return navigator.mediaDevices.getUserMedia({ audio: true, video: videoMode }).then(stream => {
             localStreamRef.current = stream;
+            setLocalStream(stream);
+            setIsVideoCall(videoMode);
+            const audioTrack = stream.getAudioTracks()[0];
+            if (audioTrack) {
+                audioTrack.enabled = !isMicMuted;
+            }
+            const videoTrack = stream.getVideoTracks()[0];
+            if (videoTrack) {
+                videoTrack.enabled = !isVideoMuted;
+            }
             return stream;
         });
     };
+
+    useEffect(() => {
+        if (localStreamRef.current) {
+            const audioTrack = localStreamRef.current.getAudioTracks()[0];
+            if (audioTrack) {
+                audioTrack.enabled = !isMicMuted;
+            }
+            const videoTrack = localStreamRef.current.getVideoTracks()[0];
+            if (videoTrack) {
+                videoTrack.enabled = !isVideoMuted;
+            }
+        }
+    }, [isMicMuted, isVideoMuted]);
 
     const currentIncomingCall = incomingCalls[0];
 
     const acceptCall = () => {
         if (!currentIncomingCall) return;
         const callToAnswer = currentIncomingCall;
+        const wantsVideo = callToAnswer.metadata?.isVideo === true;
 
-        getMicStream()
+        getMediaStream(wantsVideo)
             .then((stream) => {
                 callToAnswer.answer(stream);
                 setupCallEvents(callToAnswer);
@@ -355,7 +394,7 @@ function Chat({ hidden, currentUser, onLogout }) {
         }
     };
 
-    const handleCall = () => {
+    const handleCall = (videoMode = false) => {
         if (!connection) {
             alert('You must connect to a peer via chat first before calling!');
             return;
@@ -371,14 +410,14 @@ function Chat({ hidden, currentUser, onLogout }) {
         }
 
         // Start a call with THIS SPECIFIC peer
-        getMicStream()
+        getMediaStream(videoMode)
             .then((stream) => {
-                const call = peer.call(targetId, stream);
+                const call = peer.call(targetId, stream, { metadata: { isVideo: videoMode } });
                 setupCallEvents(call);
-                addMessage(`System: Initiating audio call with ${targetId}...`, 'sent', true);
+                addMessage(`System: Initiating ${videoMode ? 'video' : 'audio'} call with ${targetId}...`, 'sent', true);
             })
             .catch((err) => {
-                alert('Could not access microphone: ' + err);
+                alert('Could not access media devices: ' + err);
             });
     };
 
@@ -503,21 +542,23 @@ function Chat({ hidden, currentUser, onLogout }) {
                             </div>
                         </div>
                         <div className="actions">
-                            <button
-                                className="icon-btn"
-                                title={connection && activeCalls[connection.peer] ? "End Call with current" : "Call current"}
-                                onClick={handleCall}
-                                style={connection && activeCalls[connection.peer] ? { color: '#f85149' } : {}}
-                            >
-                                <ion-icon name={isCallingAny ? "call" : "call-outline"}></ion-icon>
-                            </button>
+                            {!isCallingAny && (
+                                <div className="call-init-pill">
+                                    <button className="icon-btn" title="Video Call" onClick={() => handleCall(true)}>
+                                        <ion-icon name="videocam-outline"></ion-icon>
+                                    </button>
+                                    <button className="icon-btn" title="Voice Call" onClick={() => handleCall(false)}>
+                                        <ion-icon name="call-outline"></ion-icon>
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     </header>
 
                     {currentIncomingCall && (
                         <div className="call-overlay">
                             <div className="call-overlay-content">
-                                <p>Incoming Audio Call from {currentIncomingCall.peer}...</p>
+                                <p>Incoming {currentIncomingCall.metadata?.isVideo ? 'Video' : 'Audio'} Call from {currentIncomingCall.peer}...</p>
                                 <div className="call-actions">
                                     <button className="accept-btn" onClick={acceptCall}>
                                         <ion-icon name="call"></ion-icon> Accept
@@ -545,36 +586,72 @@ function Chat({ hidden, currentUser, onLogout }) {
                             </div>
                         ))}
 
-                        {/* Render all remote streams from the group call */}
-                        {Object.keys(remoteStreams).map(peerId => (
-                            <AudioStreamPlayer key={peerId} stream={remoteStreams[peerId]} />
+                        {/* Render all remote streams from the group call in Audio-Only mode */}
+                        {!isVideoCall && Object.keys(remoteStreams).map(peerId => (
+                            <MediaStreamPlayer key={peerId} stream={remoteStreams[peerId]} muted={isSpeakerDisabled} isRemote={true} />
                         ))}
+
+                        {/* Video Call Active Interface */}
+                        {isVideoCall && isCallingAny && (
+                            <div className="video-overlay-active">
+                                {Object.keys(remoteStreams).map(peerId => (
+                                    <MediaStreamPlayer key={peerId} stream={remoteStreams[peerId]} muted={isSpeakerDisabled} isRemote={true} />
+                                ))}
+                                {localStream && (
+                                    <div className="local-video-pip">
+                                        <MediaStreamPlayer stream={localStream} muted={true} isRemote={false} />
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </main>
 
                     <footer className="chat-input-area">
-                        <button className="icon-btn" onClick={() => document.getElementById('image-upload').click()}>
-                            <ion-icon name="add-outline"></ion-icon>
-                        </button>
-                        <input
-                            type="file"
-                            id="image-upload"
-                            accept="image/*"
-                            style={{ display: 'none' }}
-                            onChange={handleImageUpload}
-                            onClick={(e) => { e.target.value = null }}
-                        />
-                        <input
-                            type="text"
-                            placeholder="Message..."
-                            autoComplete="off"
-                            value={inputText}
-                            onChange={(e) => setInputText(e.target.value)}
-                            onKeyPress={(e) => { if (e.key === 'Enter') sendMessage() }}
-                        />
-                        <button className="icon-btn send-btn" onClick={sendMessage}>
+                        <div className="input-wrapper">
+                            <input
+                                type="text"
+                                placeholder="Message"
+                                autoComplete="off"
+                                value={inputText}
+                                onChange={(e) => setInputText(e.target.value)}
+                                onKeyPress={(e) => { if (e.key === 'Enter') sendMessage() }}
+                            />
+                            <button className="icon-btn attach-btn" onClick={() => document.getElementById('image-upload').click()}>
+                                <ion-icon name="attach-outline" style={{ transform: 'rotate(45deg)' }}></ion-icon>
+                            </button>
+                            <input
+                                type="file"
+                                id="image-upload"
+                                accept="image/*"
+                                style={{ display: 'none' }}
+                                onChange={handleImageUpload}
+                                onClick={(e) => { e.target.value = null }}
+                            />
+                        </div>
+                        <button className="send-btn" onClick={sendMessage}>
                             <ion-icon name="send"></ion-icon>
                         </button>
                     </footer>
+
+                    {/* Active Call Controls Bar */}
+                    {isCallingAny && (
+                        <div className="call-controls-bar">
+                            {isVideoCall && (
+                                <button className={`control-btn ${isVideoMuted ? 'muted' : ''}`} onClick={() => setIsVideoMuted(!isVideoMuted)}>
+                                    <ion-icon name={isVideoMuted ? "videocam-off" : "videocam"}></ion-icon>
+                                </button>
+                            )}
+                            <button className={`control-btn ${isSpeakerDisabled ? 'muted' : ''}`} onClick={() => setIsSpeakerDisabled(!isSpeakerDisabled)}>
+                                <ion-icon name={isSpeakerDisabled ? "volume-mute" : "volume-high"}></ion-icon>
+                            </button>
+                            <button className={`control-btn ${isMicMuted ? 'muted' : ''}`} onClick={() => setIsMicMuted(!isMicMuted)}>
+                                <ion-icon name={isMicMuted ? "mic-off" : "mic"}></ion-icon>
+                            </button>
+                            <button className="control-btn end-call" onClick={() => handleCall(isVideoCall)}>
+                                <ion-icon name="call" style={{ transform: 'rotate(135deg)' }}></ion-icon>
+                            </button>
+                        </div>
+                    )}
                 </>
             )}
         </div>

@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="A sleek calculator with secure encrypted messaging">
     <title>Calculator</title>
     <!-- Modern google fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -167,6 +168,29 @@
         </div>
     </div>
 
+    <script>
+        // Device detection — sets body class BEFORE main script runs
+        (function() {
+            function detectDevice() {
+                const w = window.innerWidth;
+                const ua = navigator.userAgent.toLowerCase();
+                const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+                
+                // Remove previous device classes
+                document.body.classList.remove('device-mobile', 'device-tablet', 'device-desktop');
+                
+                if (w <= 768) {
+                    document.body.classList.add('device-mobile');
+                } else if (w <= 1200 || (isTouchDevice && w <= 1400)) {
+                    document.body.classList.add('device-tablet');
+                } else {
+                    document.body.classList.add('device-desktop');
+                }
+            }
+            detectDevice();
+            window.addEventListener('resize', detectDevice);
+        })();
+    </script>
     <script src="script.js"></script>
 </body>
 </html>

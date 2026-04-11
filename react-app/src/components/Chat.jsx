@@ -184,15 +184,7 @@ function Chat({ hidden, currentUser, onLogout }) {
         if (!hidden && !peer && currentUser) {
             const permanentId = generatePermanentId(currentUser);
             const newPeer = new Peer(permanentId, {
-                config: {
-                    iceServers: [
-                        { urls: 'stun:stun.l.google.com:19302' },
-                        { urls: 'stun:stun1.l.google.com:19302' },
-                        { urls: 'stun:stun2.l.google.com:19302' },
-                        { urls: 'stun:stun3.l.google.com:19302' },
-                        { urls: 'stun:stun4.l.google.com:19302' },
-                    ]
-                }
+                debug: 2
             });
 
             newPeer.on('open', (id) => {
@@ -208,6 +200,15 @@ function Chat({ hidden, currentUser, onLogout }) {
             newPeer.on('call', (call) => {
                 // Someone is calling us
                 setIncomingCalls(prev => [...prev, call]);
+            });
+
+            newPeer.on('error', (err) => {
+                console.error('Peer error:', err);
+                if (err.type === 'peer-unavailable') {
+                    alert('Failed to connect: The specified Peer ID is either offline or invalid.');
+                } else if (err.type === 'network') {
+                    alert('Network error: Could not connect to the signaling server.');
+                }
             });
 
             setPeer(newPeer);
@@ -376,11 +377,16 @@ function Chat({ hidden, currentUser, onLogout }) {
             alert('Please wait for your Peer ID to generate.');
             return;
         }
-        const targetId = prompt('Enter the Peer ID of the person you want to connect to:');
-        if (targetId && targetId !== myPeerId) {
-            switchToContact(targetId);
-            const conn = peer.connect(targetId);
-            setupConnection(conn);
+        let targetId = prompt('Enter the Peer ID of the person you want to connect to:');
+        if (targetId) {
+            targetId = targetId.trim();
+            if (targetId !== myPeerId) {
+                switchToContact(targetId);
+                const conn = peer.connect(targetId, { reliable: true });
+                setupConnection(conn);
+            } else {
+                alert("You cannot connect to yourself!");
+            }
         }
     };
 

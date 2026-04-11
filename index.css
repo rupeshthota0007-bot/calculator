@@ -42,6 +42,7 @@ body {
     position: relative;
     overflow: hidden;
     border: 1px solid var(--glass-border);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .view {
@@ -699,4 +700,646 @@ body {
 
 #call-timer-display {
     font-size: 0.9rem; font-weight: 500; font-variant-numeric: tabular-nums;
+}
+
+/* ============================= */
+/* RESPONSIVE DESIGN SYSTEM      */
+/* ============================= */
+
+/* --- MOBILE (up to 768px) --- */
+/* Full-screen, edge-to-edge, native app feel */
+@media (max-width: 768px) {
+    body {
+        align-items: stretch;
+        height: 100vh;
+        height: 100dvh; /* Dynamic viewport for mobile browsers */
+    }
+
+    .app-container {
+        max-width: 100%;
+        width: 100%;
+        height: 100vh;
+        height: 100dvh;
+        max-height: none;
+        border-radius: 0;
+        border: none;
+        box-shadow: none;
+    }
+
+    /* Calculator */
+    #calculator-view {
+        padding: 20px 16px;
+        padding-top: env(safe-area-inset-top, 20px);
+    }
+
+    .calc-display {
+        font-size: 3rem;
+        padding-bottom: 15px;
+    }
+
+    .calc-keys {
+        grid-gap: 10px;
+    }
+
+    .calc-keys button {
+        font-size: 1.4rem;
+    }
+
+    /* Chat */
+    .chat-header,
+    .recent-header {
+        padding: 12px 16px;
+        padding-top: max(12px, env(safe-area-inset-top, 12px));
+    }
+
+    .chat-input-area {
+        padding: 10px 12px;
+        padding-bottom: max(10px, env(safe-area-inset-bottom, 10px));
+    }
+
+    .message {
+        max-width: 88%;
+    }
+
+    .message p {
+        font-size: 0.9rem;
+    }
+
+    .avatar {
+        width: 36px;
+        height: 36px;
+        font-size: 1rem;
+    }
+
+    .details h2 {
+        font-size: 0.95rem;
+    }
+
+    .icon-btn {
+        width: 38px;
+        height: 38px;
+        font-size: 1.3rem;
+    }
+
+    /* Auth */
+    .auth-container {
+        width: 90%;
+        max-width: 340px;
+        padding: 24px 18px;
+    }
+
+    .auth-header h2 {
+        font-size: 1.25rem;
+    }
+
+    /* Chat Item */
+    .chat-item {
+        padding: 12px 16px;
+    }
+
+    .chat-item-avatar {
+        width: 44px;
+        height: 44px;
+        font-size: 1.3rem;
+    }
+
+    .chat-item-snippet {
+        max-width: 180px;
+    }
+
+    /* FAB */
+    .fab {
+        bottom: max(20px, env(safe-area-inset-bottom, 20px));
+        right: 16px;
+    }
+
+    /* Call overlay */
+    .call-modal-content {
+        padding: 24px;
+        margin: 0 16px;
+        border-radius: 16px;
+    }
+}
+
+/* Extra small phones */
+@media (max-width: 360px) {
+    .calc-display {
+        font-size: 2.4rem;
+    }
+
+    .calc-keys {
+        grid-gap: 8px;
+    }
+
+    .calc-keys button {
+        font-size: 1.2rem;
+    }
+
+    .calc-keys .zero-btn {
+        padding-left: 24px;
+    }
+}
+
+/* --- TABLET / iPAD (769px to 1200px) --- */
+/* Centered container with more breathing room, wider layout */
+@media (min-width: 769px) and (max-width: 1200px) {
+    body {
+        background: linear-gradient(135deg, #080a10 0%, #0b0f19 50%, #060810 100%);
+    }
+
+    .app-container {
+        max-width: 680px;
+        width: 90%;
+        height: 90vh;
+        max-height: 1024px;
+        border-radius: 24px;
+        box-shadow:
+            0 30px 60px -15px rgba(0, 0, 0, 0.6),
+            0 0 0 1px rgba(255, 255, 255, 0.06),
+            inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    }
+
+    /* Calculator */
+    #calculator-view {
+        padding: 40px 36px;
+    }
+
+    .calc-display {
+        font-size: 4.5rem;
+        padding-bottom: 30px;
+    }
+
+    .calc-keys {
+        grid-gap: 16px;
+        max-width: 480px;
+        margin: 0 auto;
+    }
+
+    .calc-keys button {
+        font-size: 1.8rem;
+    }
+
+    /* Chat */
+    .chat-header,
+    .recent-header {
+        padding: 18px 28px;
+    }
+
+    .avatar {
+        width: 48px;
+        height: 48px;
+        font-size: 1.4rem;
+    }
+
+    .details h2 {
+        font-size: 1.15rem;
+    }
+
+    .chat-messages {
+        padding: 24px 28px;
+        gap: 18px;
+    }
+
+    .message {
+        max-width: 70%;
+        padding: 14px 20px;
+        border-radius: 22px;
+    }
+
+    .message p {
+        font-size: 1rem;
+        line-height: 1.5;
+    }
+
+    .chat-input-area {
+        padding: 16px 24px;
+    }
+
+    #message-input {
+        padding: 14px 22px;
+        font-size: 1rem;
+    }
+
+    .icon-btn {
+        width: 48px;
+        height: 48px;
+        font-size: 1.6rem;
+    }
+
+    /* Auth */
+    .auth-container {
+        width: 80%;
+        max-width: 420px;
+        padding: 40px 32px;
+        border-radius: 24px;
+    }
+
+    .auth-header h2 {
+        font-size: 1.6rem;
+    }
+
+    .auth-header p {
+        font-size: 0.95rem;
+    }
+
+    .auth-icon {
+        font-size: 3.5rem;
+    }
+
+    .input-group input {
+        padding: 16px 16px 16px 44px;
+        font-size: 1rem;
+        border-radius: 14px;
+    }
+
+    .auth-btn {
+        padding: 16px;
+        font-size: 1.05rem;
+        border-radius: 14px;
+    }
+
+    /* Recent Chats */
+    .chat-item {
+        padding: 16px 28px;
+    }
+
+    .chat-item-avatar {
+        width: 52px;
+        height: 52px;
+        margin-right: 18px;
+        font-size: 1.6rem;
+    }
+
+    .chat-item-name {
+        font-size: 1.1rem;
+    }
+
+    .chat-item-snippet {
+        font-size: 0.9rem;
+        max-width: 350px;
+    }
+
+    /* FAB */
+    .fab {
+        width: 64px;
+        height: 64px;
+        font-size: 2.2rem;
+        bottom: 28px;
+        right: 28px;
+    }
+
+    /* Call overlay */
+    .call-modal-content {
+        padding: 36px;
+        border-radius: 24px;
+    }
+
+    .ringing-avatar {
+        width: 80px;
+        height: 80px;
+        font-size: 2.5rem;
+    }
+
+    .call-btn {
+        width: 64px;
+        height: 64px;
+        font-size: 2rem;
+    }
+}
+
+/* --- DESKTOP (1201px and above) --- */
+/* Wide layout with sidebar for recent chats, spacious content area */
+@media (min-width: 1201px) {
+    body {
+        background: linear-gradient(135deg, #07090e 0%, #0a0e18 40%, #05070d 100%);
+    }
+
+    .app-container {
+        max-width: 1100px;
+        width: 92%;
+        height: 88vh;
+        max-height: 920px;
+        border-radius: 28px;
+        box-shadow:
+            0 40px 80px -20px rgba(0, 0, 0, 0.7),
+            0 0 0 1px rgba(255, 255, 255, 0.05),
+            0 0 120px -40px rgba(35, 134, 54, 0.08),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    }
+
+    /* Calculator - wider grid for desktop */
+    #calculator-view {
+        padding: 50px 48px;
+    }
+
+    .calc-display {
+        font-size: 5rem;
+        padding-bottom: 35px;
+        letter-spacing: -3px;
+    }
+
+    .calc-keys {
+        grid-gap: 20px;
+        max-width: 640px;
+        margin: 0 auto;
+    }
+
+    .calc-keys button {
+        font-size: 2.2rem;
+        border-radius: 22px;
+        transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .calc-keys button:hover {
+        transform: translateY(-2px) scale(1.02);
+        box-shadow: 0 8px 16px -4px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    }
+
+    .calc-keys .zero-btn {
+        border-radius: 20px;
+    }
+
+    /* Chat */
+    .chat-header,
+    .recent-header {
+        padding: 20px 32px;
+    }
+
+    .avatar {
+        width: 50px;
+        height: 50px;
+        font-size: 1.5rem;
+    }
+
+    .details h2 {
+        font-size: 1.2rem;
+    }
+
+    .details .status {
+        font-size: 0.85rem;
+    }
+
+    .chat-messages {
+        padding: 28px 36px;
+        gap: 20px;
+    }
+
+    .message {
+        max-width: 55%;
+        padding: 16px 22px;
+        border-radius: 24px;
+    }
+
+    .message p {
+        font-size: 1.02rem;
+        line-height: 1.55;
+    }
+
+    .message .time {
+        font-size: 0.72rem;
+    }
+
+    .chat-input-area {
+        padding: 18px 32px;
+    }
+
+    #message-input {
+        padding: 15px 24px;
+        font-size: 1.02rem;
+        border-radius: 28px;
+    }
+
+    .icon-btn {
+        width: 50px;
+        height: 50px;
+        font-size: 1.6rem;
+    }
+
+    /* Auth - wider and more spacious */
+    .auth-container {
+        width: 70%;
+        max-width: 480px;
+        padding: 48px 40px;
+        border-radius: 28px;
+    }
+
+    .auth-header {
+        margin-bottom: 32px;
+    }
+
+    .auth-header h2 {
+        font-size: 1.8rem;
+    }
+
+    .auth-header p {
+        font-size: 1rem;
+    }
+
+    .auth-icon {
+        font-size: 4rem;
+        margin-bottom: 14px;
+    }
+
+    .auth-form {
+        gap: 18px;
+    }
+
+    .input-group input {
+        padding: 18px 18px 18px 48px;
+        font-size: 1.05rem;
+        border-radius: 16px;
+    }
+
+    .input-group ion-icon {
+        font-size: 1.2rem;
+        left: 18px;
+    }
+
+    .auth-btn {
+        padding: 18px;
+        font-size: 1.1rem;
+        border-radius: 16px;
+    }
+
+    .auth-switch {
+        font-size: 0.9rem;
+        margin-top: 20px;
+    }
+
+    /* Recent Chats */
+    .chat-item {
+        padding: 18px 32px;
+        transition: background 0.2s, transform 0.15s;
+    }
+
+    .chat-item:hover {
+        background: rgba(255, 255, 255, 0.04);
+        transform: translateX(4px);
+    }
+
+    .chat-item-avatar {
+        width: 56px;
+        height: 56px;
+        margin-right: 20px;
+        font-size: 1.7rem;
+    }
+
+    .chat-item-name {
+        font-size: 1.15rem;
+    }
+
+    .chat-item-time {
+        font-size: 0.8rem;
+    }
+
+    .chat-item-snippet {
+        font-size: 0.92rem;
+        max-width: 500px;
+    }
+
+    /* FAB */
+    .fab {
+        width: 68px;
+        height: 68px;
+        font-size: 2.4rem;
+        bottom: 32px;
+        right: 32px;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .fab:hover {
+        transform: scale(1.08) rotate(90deg);
+        box-shadow: 0 8px 24px rgba(35, 134, 54, 0.5);
+    }
+
+    /* Call overlay */
+    .call-modal-content {
+        padding: 44px;
+        border-radius: 28px;
+        min-width: 380px;
+    }
+
+    .ringing-avatar {
+        width: 88px;
+        height: 88px;
+        font-size: 2.8rem;
+    }
+
+    .call-info h3 {
+        font-size: 1.4rem;
+    }
+
+    .call-info p {
+        font-size: 1rem;
+    }
+
+    .call-btn {
+        width: 68px;
+        height: 68px;
+        font-size: 2.2rem;
+    }
+
+    .call-actions {
+        gap: 40px;
+    }
+
+    /* Call banner */
+    .call-banner {
+        padding: 10px 22px;
+        border-radius: 24px;
+        gap: 16px;
+    }
+
+    #call-timer-display {
+        font-size: 1rem;
+    }
+}
+
+/* Ultra-wide desktop (1600px+) */
+@media (min-width: 1600px) {
+    .app-container {
+        max-width: 1280px;
+        height: 85vh;
+        max-height: 960px;
+    }
+
+    .calc-display {
+        font-size: 5.5rem;
+    }
+
+    .calc-keys {
+        max-width: 580px;
+        grid-gap: 20px;
+    }
+
+    .calc-keys button {
+        font-size: 2.2rem;
+    }
+
+    .message {
+        max-width: 50%;
+    }
+}
+
+/* Landscape mode for mobile  */
+@media (max-width: 768px) and (orientation: landscape) {
+    .app-container {
+        height: 100vh;
+        height: 100dvh;
+    }
+
+    #calculator-view {
+        padding: 10px 16px;
+        flex-direction: row;
+    }
+
+    .calc-display {
+        flex: 0 0 35%;
+        font-size: 2.5rem;
+        padding-bottom: 0;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .calc-keys {
+        flex: 1;
+        grid-gap: 6px;
+        align-content: center;
+    }
+
+    .calc-keys button {
+        font-size: 1.1rem;
+    }
+
+    .chat-messages {
+        padding: 10px 14px;
+    }
+}
+
+/* Hover media query - only apply hover effects on devices that support it */
+@media (hover: hover) {
+    .calc-keys button:hover {
+        background: var(--calc-btn-hover);
+    }
+
+    .icon-btn:hover {
+        color: var(--text-main);
+        background: var(--calc-btn-bg);
+    }
+
+    .chat-item:hover {
+        background: rgba(255, 255, 255, 0.03);
+    }
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+    .view,
+    .app-container,
+    .calc-keys button,
+    .message,
+    .fab {
+        transition: none !important;
+        animation: none !important;
+    }
 }

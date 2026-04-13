@@ -184,7 +184,23 @@ function Chat({ hidden, currentUser, onLogout }) {
         if (!hidden && !peer && currentUser) {
             const permanentId = generatePermanentId(currentUser);
             const newPeer = new Peer(permanentId, {
-                debug: 2
+                debug: 2,
+                // Use PeerJS Cloud signaling server with secure WebSocket (required for HTTPS on Vercel)
+                host: '0.peerjs.com',
+                port: 443,
+                secure: true,
+                path: '/',
+                // ICE servers for NAT traversal — required for cross-network connections
+                config: {
+                    iceServers: [
+                        { urls: 'stun:stun.l.google.com:19302' },
+                        { urls: 'stun:stun1.l.google.com:19302' },
+                        { urls: 'stun:stun2.l.google.com:19302' },
+                        { urls: 'stun:stun3.l.google.com:19302' },
+                        { urls: 'stun:stun4.l.google.com:19302' },
+                        { urls: 'stun:global.stun.twilio.com:3478' },
+                    ]
+                }
             });
 
             newPeer.on('open', (id) => {

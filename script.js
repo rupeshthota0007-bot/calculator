@@ -315,11 +315,6 @@ let myPeerId = null;
 function initializePeer(customId) {
     if (peer) return; // already initialized
     peer = new Peer(customId, {
-        // Required for HTTPS on Vercel — use secure WebSocket
-        host: '0.peerjs.com',
-        port: 443,
-        secure: true,
-        path: '/',
         // STUN servers for NAT traversal (cross-network connections)
         config: {
             iceServers: [

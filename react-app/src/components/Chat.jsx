@@ -185,11 +185,6 @@ function Chat({ hidden, currentUser, onLogout }) {
             const permanentId = generatePermanentId(currentUser);
             const newPeer = new Peer(permanentId, {
                 debug: 2,
-                // Use PeerJS Cloud signaling server with secure WebSocket (required for HTTPS on Vercel)
-                host: '0.peerjs.com',
-                port: 443,
-                secure: true,
-                path: '/',
                 // ICE servers for NAT traversal — required for cross-network connections
                 config: {
                     iceServers: [

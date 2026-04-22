@@ -36,7 +36,7 @@ function handleOperator(op) {
     } else if (operator) {
         const result = calculate(parseFloat(previousInput), inputValue, operator);
         currentInput = String(result);
-        if(currentInput.length > 15) currentInput = currentInput.substring(0, 15);
+        if (currentInput.length > 15) currentInput = currentInput.substring(0, 15);
         previousInput = currentInput;
     }
     awaitingNextValue = true;
@@ -54,7 +54,7 @@ function calculate(first, second, op) {
 
 calcKeys.addEventListener('click', (e) => {
     if (!e.target.matches('button')) return;
-    
+
     const key = e.target;
     const action = key.dataset.action;
     const value = key.value;
@@ -75,7 +75,7 @@ calcKeys.addEventListener('click', (e) => {
         previousInput = '';
         operator = null;
         updateDisplay();
-        return; 
+        return;
     }
     // Keep sequence reasonably small
     if (inputSequence.length > 20) {
@@ -94,7 +94,7 @@ calcKeys.addEventListener('click', (e) => {
     } else if (action === 'calculate') {
         if (operator) {
             currentInput = String(calculate(parseFloat(previousInput), parseFloat(currentInput), operator));
-            if(currentInput.length > 15) currentInput = currentInput.substring(0, 15);
+            if (currentInput.length > 15) currentInput = currentInput.substring(0, 15);
             operator = null;
             previousInput = '';
             awaitingNextValue = true;
@@ -106,7 +106,7 @@ calcKeys.addEventListener('click', (e) => {
         awaitingNextValue = false;
         inputSequence = '';
     } else if (action === 'delete') {
-        if(!awaitingNextValue) {
+        if (!awaitingNextValue) {
             currentInput = currentInput.slice(0, -1) || '0';
         }
     }
@@ -168,13 +168,13 @@ authForm.addEventListener('submit', (e) => {
     e.preventDefault();
     const username = authUsername.value.trim().toLowerCase();
     const password = authPassword.value.trim();
-    
+
     if (username.length < 3) {
         alert("Username must be at least 3 characters."); return;
     }
-    
+
     const accounts = JSON.parse(localStorage.getItem('calc_accounts')) || {};
-    
+
     if (!isLoginMode) {
         if (accounts[username]) {
             alert("Username already taken."); return;
@@ -197,12 +197,12 @@ authForm.addEventListener('submit', (e) => {
 
 function loginUser(username, accounts) {
     currentUser = { username: username, id: accounts[username].id };
-    
+
     // We no longer persist 'calc_chat_user' to force login every time they unlock.
-    
+
     authUsername.value = '';
     authPassword.value = '';
-    
+
     switchView(authView, recentChatsView);
     initializePeer(currentUser.id);
     renderRecentChats();
@@ -210,9 +210,9 @@ function loginUser(username, accounts) {
 
 document.getElementById('logout-btn').addEventListener('click', () => {
     currentUser = null;
-    if(peer) { peer.destroy(); peer = null; }
+    if (peer) { peer.destroy(); peer = null; }
     // Lock the application and return to calculator view
-    switchView(recentChatsView, calcView); 
+    switchView(recentChatsView, calcView);
 });
 
 // --- RECENT CHATS LOGIC ---
@@ -225,14 +225,14 @@ let recentChats = JSON.parse(localStorage.getItem('calc_recent_chats')) || [];
 
 function renderRecentChats() {
     recentList.innerHTML = '';
-    
+
     if (recentChats.length === 0) {
         recentList.innerHTML = `<div style="text-align:center; padding: 40px; color: var(--text-muted);">
             No recent chats.<br>Click the + button to start a new connection.
         </div>`;
         return;
     }
-    
+
     recentChats.forEach(chat => {
         const div = document.createElement('div');
         div.className = 'chat-item';
@@ -247,7 +247,7 @@ function renderRecentChats() {
             </div>
         `;
         div.addEventListener('click', () => {
-             openChat(chat.id);
+            openChat(chat.id);
         });
         recentList.appendChild(div);
     });
@@ -288,7 +288,7 @@ function openChat(targetId) {
     `;
     connectionStatus.textContent = `Target: ${targetId}`;
     connectionStatus.style.color = '';
-    
+
     if (peer && peer.open) {
         currentConn = peer.connect(targetId);
         setupConnection(currentConn);
@@ -315,6 +315,7 @@ let myPeerId = null;
 function initializePeer(customId) {
     if (peer) return; // already initialized
     peer = new Peer(customId, {
+        pingInterval: 5000,
         // STUN servers for NAT traversal (cross-network connections)
         config: {
             iceServers: [
@@ -327,10 +328,21 @@ function initializePeer(customId) {
             ]
         }
     });
-    
+
     peer.on('open', (id) => {
         myPeerId = id;
         myPeerIdDisplay.textContent = `ID: ${id}`;
+    });
+
+    peer.on('disconnected', () => {
+        console.warn('Signaling server disconnected! Reconnecting...');
+        if (peer && !peer.destroyed) {
+            peer.reconnect();
+        }
+    });
+
+    peer.on('error', (err) => {
+        console.error('Peer error:', err);
     });
 
     peer.on('connection', (conn) => {
@@ -347,9 +359,9 @@ function initializePeer(customId) {
         // Expose to global scope for the accept/reject handlers
         window.incomingCallObj = call;
         const callerIdDisplay = document.getElementById('caller-id-display');
-        if(callerIdDisplay) callerIdDisplay.textContent = call.peer;
+        if (callerIdDisplay) callerIdDisplay.textContent = call.peer;
         const modal = document.getElementById('incoming-call-modal');
-        if(modal) modal.classList.remove('hidden');
+        if (modal) modal.classList.remove('hidden');
     });
 }
 
@@ -367,11 +379,11 @@ function setupConnection(conn) {
             scrollToBottom();
         }
     });
-    
+
     conn.on('data', (data) => {
         receiveMessage(data);
     });
-    
+
     conn.on('close', () => {
         connectionStatus.textContent = `ID: ${myPeerId}`;
         connectionStatus.style.color = '';
@@ -382,7 +394,7 @@ function setupConnection(conn) {
 
 function receiveMessage(data) {
     const timeString = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    
+
     // Support legacy string messages and new object-based messages
     let type = 'text';
     let content = data;
@@ -390,7 +402,7 @@ function receiveMessage(data) {
         type = data.type;
         content = data.content;
     }
-    
+
     if (currentConn && chatView.classList.contains('active') && currentChatTarget === currentConn.peer) {
         const replyDiv = document.createElement('div');
         replyDiv.className = 'message received';
@@ -408,13 +420,13 @@ function receiveMessage(data) {
         chatMessages.appendChild(replyDiv);
         scrollToBottom();
     }
-    
+
     if (currentConn) {
         const recentText = type === 'image' ? '📷 Image' : content;
         saveRecentChat(currentConn.peer, recentText);
         if (!chatView.classList.contains('active') || currentChatTarget !== currentConn.peer) {
-             // Play notification sound or something if we wanted
-             renderRecentChats(); // refresh list
+            // Play notification sound or something if we wanted
+            renderRecentChats(); // refresh list
         }
     }
 }
@@ -432,7 +444,7 @@ function sendMessage() {
         <p>${escapeHTML(text)}</p>
         <span class="time">${timeString}</span>
     `;
-    
+
     chatMessages.appendChild(msgDiv);
     messageInput.value = '';
     scrollToBottom();
@@ -463,7 +475,7 @@ function scrollToBottom() {
 }
 
 function escapeHTML(str) {
-    return str.replace(/[&<>'"]/g, 
+    return str.replace(/[&<>'"]/g,
         tag => ({
             '&': '&amp;',
             '<': '&lt;',
@@ -504,7 +516,7 @@ if (attachBtn && imageUploadInput) {
             sendImageMessage(base64Data);
         };
         reader.readAsDataURL(file);
-        
+
         imageUploadInput.value = ''; // Reset input to allow re-upload 
     });
 }
@@ -639,10 +651,10 @@ document.getElementById('call-btn').addEventListener('click', async () => {
     }
     const stream = await getLocalAudioStream();
     if (!stream) return;
-    
+
     const call = peer.call(currentChatTarget, stream);
     setupCallEvents(call);
-    
+
     document.getElementById('active-call-banner').classList.remove('hidden');
     document.getElementById('call-timer-display').textContent = 'Calling...';
 });

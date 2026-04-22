@@ -25,6 +25,7 @@ function Chat({ hidden, currentUser, onLogout }) {
     const [peer, setPeer] = useState(null);
     const [myPeerId, setMyPeerId] = useState('');
     const [connection, setConnection] = useState(null);
+    const [isPeerConnected, setIsPeerConnected] = useState(false);
     const [activeContact, setActiveContact] = useState(null);
     const [chatView, setChatView] = useState('list');
 
@@ -85,7 +86,20 @@ function Chat({ hidden, currentUser, onLogout }) {
     useEffect(() => {
         if (!hidden && !peer) {
             const permanentId = generatePermanentId();
-            const newPeer = new Peer(permanentId);
+            const newPeer = new Peer(permanentId, {
+                debug: 2,
+                pingInterval: 5000,
+                config: {
+                    iceServers: [
+                        { urls: 'stun:stun.l.google.com:19302' },
+                        { urls: 'stun:stun1.l.google.com:19302' },
+                        { urls: 'stun:stun2.l.google.com:19302' },
+                        { urls: 'stun:stun3.l.google.com:19302' },
+                        { urls: 'stun:stun4.l.google.com:19302' },
+                        { urls: 'stun:global.stun.twilio.com:3478' },
+                    ]
+                }
+            });
 
             newPeer.on('open', (id) => {
                 setMyPeerId(id);
@@ -102,13 +116,29 @@ function Chat({ hidden, currentUser, onLogout }) {
                 setIncomingCalls(prev => [...prev, call]);
             });
 
+            newPeer.on('error', (err) => {
+                console.error('Peer error:', err);
+                if (err.type === 'peer-unavailable') {
+                    alert('Failed to connect: The specified Peer ID is either offline or invalid.');
+                }
+            });
+
+            newPeer.on('disconnected', () => {
+                console.warn('Signaling server disconnected! Reconnecting...');
+                if (!newPeer.destroyed) {
+                    newPeer.reconnect();
+                }
+            });
+
             setPeer(newPeer);
         }
     }, [hidden, peer]);
 
     const setupConnection = (conn) => {
         setConnection(conn);
+        setIsPeerConnected(false);
         conn.on('open', () => {
+            setIsPeerConnected(true);
             switchToContact(conn.peer);
             addMessage('System: Connected to peer!', 'received', true);
         });
@@ -122,6 +152,7 @@ function Chat({ hidden, currentUser, onLogout }) {
         });
         conn.on('close', () => {
             setConnection(null);
+            setIsPeerConnected(false);
             addMessage('System: Peer Disconnected.', 'received', true);
         });
         conn.on('error', (err) => {
@@ -377,7 +408,7 @@ function Chat({ hidden, currentUser, onLogout }) {
                             <div className="details">
                                 <h2 style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '140px' }}>{activeContact}</h2>
                                 <span className="status">
-                                    {connection && connection.peer === activeContact ? 'Connected' : 'Offline / History'}
+                                    {connection && connection.peer === activeContact ? (isPeerConnected ? 'Connected' : 'Connecting...') : 'Offline / History'}
                                 </span>
                                 {Object.keys(activeCalls).length > 0 && (
                                     <div style={{ fontSize: '0.8rem', color: '#00ff88' }}>

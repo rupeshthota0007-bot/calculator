@@ -26,6 +26,7 @@ function Chat({ hidden, currentUser, onLogout }) {
     const [peer, setPeer] = useState(null);
     const [myPeerId, setMyPeerId] = useState('');
     const [connection, setConnection] = useState(null);
+    const [isPeerConnected, setIsPeerConnected] = useState(false);
     const [activeContact, setActiveContact] = useState(null);
     const [chatView, setChatView] = useState('list');
     const [contextMenu, setContextMenu] = useState(null); // { contactId, x, y }
@@ -168,6 +169,7 @@ function Chat({ hidden, currentUser, onLogout }) {
             setPeer(null);
             setMyPeerId('');
             setConnection(null);
+            setIsPeerConnected(false);
             setActiveCalls({});
             setIncomingCalls([]);
             setRemoteStreams({});
@@ -185,6 +187,7 @@ function Chat({ hidden, currentUser, onLogout }) {
             const permanentId = generatePermanentId(currentUser);
             const newPeer = new Peer(permanentId, {
                 debug: 2,
+                pingInterval: 5000,
                 // ICE servers for NAT traversal — required for cross-network connections
                 config: {
                     iceServers: [
@@ -222,13 +225,22 @@ function Chat({ hidden, currentUser, onLogout }) {
                 }
             });
 
+            newPeer.on('disconnected', () => {
+                console.warn('Signaling server disconnected! Reconnecting...');
+                if (!newPeer.destroyed) {
+                    newPeer.reconnect();
+                }
+            });
+
             setPeer(newPeer);
         }
     }, [hidden, peer, currentUser]);
 
     const setupConnection = (conn) => {
         setConnection(conn);
+        setIsPeerConnected(false);
         conn.on('open', () => {
+            setIsPeerConnected(true);
             switchToContact(conn.peer);
             addMessage('System: Connected to peer!', 'received', true);
         });
@@ -242,6 +254,7 @@ function Chat({ hidden, currentUser, onLogout }) {
         });
         conn.on('close', () => {
             setConnection(null);
+            setIsPeerConnected(false);
             addMessage('System: Peer Disconnected.', 'received', true);
         });
         conn.on('error', (err) => {
@@ -549,7 +562,7 @@ function Chat({ hidden, currentUser, onLogout }) {
                             <div className="details">
                                 <h2 style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '140px' }}>{activeContact}</h2>
                                 <span className="status">
-                                    {connection && connection.peer === activeContact ? 'Connected' : 'Offline / History'}
+                                    {connection && connection.peer === activeContact ? (isPeerConnected ? 'Connected' : 'Connecting...') : 'Offline / History'}
                                 </span>
                                 {Object.keys(activeCalls).length > 0 && (
                                     <div style={{ fontSize: '0.8rem', color: '#00ff88' }}>

@@ -186,6 +186,10 @@ function Chat({ hidden, currentUser, onLogout }) {
         if (!hidden && !peer && currentUser) {
             const permanentId = generatePermanentId(currentUser);
             const newPeer = new Peer(permanentId, {
+                host: "0.peerjs.com",
+                port: 443,
+                path: "/",
+                secure: true,
                 debug: 2,
                 pingInterval: 5000,
                 // ICE servers for NAT traversal — required for cross-network connections
@@ -197,6 +201,21 @@ function Chat({ hidden, currentUser, onLogout }) {
                         { urls: 'stun:stun3.l.google.com:19302' },
                         { urls: 'stun:stun4.l.google.com:19302' },
                         { urls: 'stun:global.stun.twilio.com:3478' },
+                        {
+                            urls: "turn:openrelay.metered.ca:80",
+                            username: "openrelayproject",
+                            credential: "openrelayproject"
+                        },
+                        {
+                            urls: "turn:openrelay.metered.ca:443",
+                            username: "openrelayproject",
+                            credential: "openrelayproject"
+                        },
+                        {
+                            urls: "turn:openrelay.metered.ca:443?transport=tcp",
+                            username: "openrelayproject",
+                            credential: "openrelayproject"
+                        }
                     ]
                 }
             });
